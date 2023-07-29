@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -25,36 +26,39 @@ public class LpUserServiceImpl implements LpUserService {
 
     @Autowired
     private UserRepository userRepository;
+
     @Override
-    public void CreateUser(LpUser user) {
+    public void createUser(LpUser user) {
         if (user.getUsername() == null || user.getPassword() == null || user.getEmail() == null){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fill in all fields");
-        }
-        if (!emailValidation(user.getEmail())){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is not in the correct format");
+            throw new ResponseStatusException(HttpStatus.INSUFFICIENT_STORAGE, "Please fill in all fields");
         }
 
+        if (!emailValidation(user.getEmail())){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email is not in the correct format");
+        }
+
+
         if (!passwordValidationOnregister(user.getPassword())){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is not in the correct format");
+            throw new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT, "Password is not in the correct format");
         }
 
         if (user.getUsername().length() < 5 || user.getUsername().length() > 25){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username must be between 5 to 25 characters");
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Username must be between 5 to 25 characters");
         }
 
         if (userRepository.findByUsername(user.getUsername()).isPresent()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username already taken");
+            throw new ResponseStatusException(HttpStatus.LOCKED, "Username already taken");
         }
         if (userRepository.findByEmail(user.getEmail()).isPresent()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already taken");
+            throw new ResponseStatusException(HttpStatus.EARLY_HINTS, "Email already taken");
         }
-        String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
-        user.setPassword(encodedPassword);
+//        String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
+//        user.setPassword(encodedPassword);
         userRepository.save(user);
     }
     //Login method
     @Override
-    public void Login(String username, String password) {
+    public void login(String username, String password) {
         Optional<LpUser> lpUsers = userRepository.findByUsername(username);
         if (lpUsers.isEmpty()) {
             throw new UsernameNotFoundException("User wasn't found");
@@ -69,12 +73,12 @@ public class LpUserServiceImpl implements LpUserService {
         }
     }
     @Override
-    public void DeleteUser(Long id) {
+    public void deleteUser(Long id) {
 
     }
 
     @Override
-    public ResponseEntity<LpUser> UpdateUser(LpUser user) {
+    public ResponseEntity<LpUser> updateUser(LpUser user) {
         return null;
     }
 
@@ -102,7 +106,7 @@ public class LpUserServiceImpl implements LpUserService {
         return pattern.matcher(inputPassword).matches();
     }
     public boolean emailValidation(String email){
-        Pattern pattern = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$\n");
+        Pattern pattern = Pattern.compile("^((?!\\.)[\\w-_.]*[^.])(@\\w+)(\\.\\w+(\\.\\w+)?[^.\\W])$");
         return pattern.matcher(email).matches();
     }
 }
