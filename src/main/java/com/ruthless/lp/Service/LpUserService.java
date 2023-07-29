@@ -10,13 +10,13 @@ import java.util.Optional;
 @Service
 public interface LpUserService {
 
-    void CreateUser(LpUser user);
+    void createUser(LpUser user);
 
-    void Login(String username, String password);
+    void login(String username, String password);
 
-    void DeleteUser(Long id);
+    void deleteUser(Long id);
 
-    ResponseEntity<LpUser> UpdateUser(LpUser user);
+    ResponseEntity<LpUser> updateUser(LpUser user);
     Optional<ResponseEntity<LpUser>> getUserById(Long userId);
 
     Optional<LpUser> getUserByUserName(String username);

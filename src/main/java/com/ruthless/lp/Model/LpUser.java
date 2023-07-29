@@ -31,8 +31,6 @@ public class LpUser implements UserDetails {
     @Column
     private String password;
 
-    @Column
-    private String passwordChecker;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
