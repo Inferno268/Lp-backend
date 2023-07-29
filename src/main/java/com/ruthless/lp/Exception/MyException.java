@@ -11,5 +11,4 @@ public class MyException extends ResponseStatusException {
         super(httpStatus);
         this.message = message;
     }
-
 }

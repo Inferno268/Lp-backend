@@ -26,10 +26,11 @@ public class LpUserServiceImpl implements LpUserService {
 
     @Autowired
     private UserRepository userRepository;
+
     @Override
     public void createUser(LpUser user) {
         if (user.getUsername() == null || user.getPassword() == null || user.getEmail() == null){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fill in all fields");
+            throw new ResponseStatusException(HttpStatus.INSUFFICIENT_STORAGE, "Please fill in all fields");
         }
 
         if (!emailValidation(user.getEmail())){
@@ -49,7 +50,7 @@ public class LpUserServiceImpl implements LpUserService {
             throw new ResponseStatusException(HttpStatus.LOCKED, "Username already taken");
         }
         if (userRepository.findByEmail(user.getEmail()).isPresent()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already taken");
+            throw new ResponseStatusException(HttpStatus.EARLY_HINTS, "Email already taken");
         }
 //        String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
 //        user.setPassword(encodedPassword);
@@ -105,7 +106,7 @@ public class LpUserServiceImpl implements LpUserService {
         return pattern.matcher(inputPassword).matches();
     }
     public boolean emailValidation(String email){
-        Pattern pattern = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$\n");
+        Pattern pattern = Pattern.compile("^((?!\\.)[\\w-_.]*[^.])(@\\w+)(\\.\\w+(\\.\\w+)?[^.\\W])$");
         return pattern.matcher(email).matches();
     }
 }
