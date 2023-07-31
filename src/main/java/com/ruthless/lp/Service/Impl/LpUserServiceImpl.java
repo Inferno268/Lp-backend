@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -22,7 +23,7 @@ import java.util.regex.Pattern;
 @Service
 public class LpUserServiceImpl implements LpUserService {
 
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
     private UserRepository userRepository;
@@ -52,8 +53,7 @@ public class LpUserServiceImpl implements LpUserService {
         if (userRepository.findByEmail(user.getEmail()).isPresent()){
             throw new ResponseStatusException(HttpStatus.EARLY_HINTS, "Email already taken");
         }
-//        String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
-//        user.setPassword(encodedPassword);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
     }
     //Login method
@@ -98,7 +98,7 @@ public class LpUserServiceImpl implements LpUserService {
     }
 
     public boolean passwordValidationOnLogin(String dbPassword, String inputPassword){
-        return bCryptPasswordEncoder.matches(dbPassword, inputPassword);
+        return passwordEncoder.matches(dbPassword, inputPassword);
     }
 
     public boolean passwordValidationOnregister(String inputPassword){

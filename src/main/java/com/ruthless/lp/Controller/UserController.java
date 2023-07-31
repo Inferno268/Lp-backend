@@ -1,9 +1,11 @@
 package com.ruthless.lp.Controller;
 
+import com.ruthless.lp.DTO.UserDTO;
 import com.ruthless.lp.Model.LpUser;
 import com.ruthless.lp.Service.LpUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,15 +42,16 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
     }
-@PostMapping("/register")
-@CrossOrigin
-    public ResponseEntity<?> register(String username, String email, String password) throws Exception{
+    @RequestMapping(method =RequestMethod.POST, value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @CrossOrigin
+    @ResponseBody
+    public ResponseEntity<?> register(@RequestBody UserDTO dto) throws Exception{
         LpUser user = new LpUser();
-        user.setUsername(username);
-        user.setEmail(email);
-        user.setPassword(password);
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setPassword(dto.getPassword());
         lpUserService.createUser(user);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>("User created",HttpStatus.OK);
 
     }
 
