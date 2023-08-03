@@ -1,11 +1,13 @@
 package com.ruthless.lp.Service.Impl;
 
+import com.ruthless.lp.DTO.UserDTO;
 import com.ruthless.lp.Model.LpUser;
 import com.ruthless.lp.Repository.LpUserRepository;
 import com.ruthless.lp.Service.LpUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +27,7 @@ public class LpUserServiceImpl implements LpUserService {
 
     @Autowired
     private LpUserRepository userRepository;
+
 
     @Override
     public void createUser(LpUser user) {
@@ -62,28 +65,71 @@ public class LpUserServiceImpl implements LpUserService {
             throw new UsernameNotFoundException("User wasn't found");
         }
         if (lpUsers.get().getUsername() == null || lpUsers.get().getPassword() == null) {
-            throw new ResponseStatusException(HttpStatus.LOCKED, "Fill in all fields");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fill in all fields");
         }
         //Returns user, if there is user under the inserted username
         LpUser user = lpUsers.get();
         if (!passwordValidationOnLogin(password, user.getPassword())){
-            throw new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT, "Incorrect password");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Incorrect password");
         }
     }
     @Override
     public void deleteUser(Long id) {
-
+        userRepository.deleteById(id);
     }
+
+   @Override
+    public LpUser updateUser(Long id, UserDTO user) {
+    LpUser existingUser = userRepository.findById(id).get();
+    existingUser.setUsername(user.getUsername());
+    existingUser.setEmail(user.getEmail());
+    existingUser.setPassword(user.getPassword());
+
+    return userRepository.save(existingUser);
+    }
+ /*
+    public void updateUser(Long id, UserDTO updatedUser) {
+        Optional<LpUser> user = userRepository.findById(id);
+
+        if (user.isPresent()) {
+            LpUser existingUser = user.get();
+
+            if (updatedUser.getUsername() == null || updatedUser.getPassword() == null || updatedUser.getEmail() == null){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fill in all fields");
+            }
+            if (!emailValidation(updatedUser.getEmail())){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is not in the correct format");
+            }
+
+            if (!passwordValidationOnregister(updatedUser.getPassword())){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is not in the correct format");
+            }
+
+            if (updatedUser.getUsername().length() < 5 || updatedUser.getUsername().length() > 25){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username must be between 5 to 25 characters");
+            }
+
+            if (userRepository.findByUsername(updatedUser.getUsername()).isPresent()){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username already taken");
+            }
+            if (userRepository.findByEmail(updatedUser.getEmail()).isPresent()){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already taken");
+            }
+
+            userRepository.save(existingUser);
+        } else {
+            throw new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT, "User not found");
+        }
+    }
+*/
+
 
     @Override
-    public ResponseEntity<LpUser> updateUser(LpUser user) {
-        return null;
+    public Optional<LpUser> getUserById(Long id) {
+        Optional<LpUser> user = userRepository.findById(id);
+        return user;
     }
 
-    @Override
-    public Optional<ResponseEntity<LpUser>> getUserById(Long userId) {
-        return Optional.empty();
-    }
 
     @Override
     public Optional<LpUser> getUserByUserName(String username) {

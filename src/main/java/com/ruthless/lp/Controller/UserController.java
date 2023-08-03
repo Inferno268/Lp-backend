@@ -3,6 +3,7 @@ package com.ruthless.lp.Controller;
 import com.ruthless.lp.DTO.UserDTO;
 import com.ruthless.lp.DTO.UserLoginDTO;
 import com.ruthless.lp.Model.LpUser;
+import com.ruthless.lp.Repository.LpUserRepository;
 import com.ruthless.lp.Service.LpUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.swing.text.html.Option;
+import java.util.Optional;
+
 @RestController
 @Slf4j
 @RequestMapping("/user")
@@ -27,6 +31,9 @@ public class UserController {
 
     @Autowired
     private LpUserService lpUserService;
+
+
+    private LpUserRepository userRepository;
 
 
     @RequestMapping(method =RequestMethod.POST, value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -64,8 +71,22 @@ public class UserController {
 
     }
 
-    @GetMapping
-    public String getHello(){
-        return "hello";
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<String> deleteUSer(@PathVariable Long id){
+        Optional<LpUser> user = lpUserService.getUserById(id);
+        if (user.isEmpty()){
+            return new ResponseEntity<>("User with id " + id + " doesn't exist",HttpStatus.NOT_FOUND);
+        }
+        lpUserService.deleteUser(id);
+        return  new ResponseEntity<>("User with id " + id + " was deleted", HttpStatus.OK);
     }
+
+    @PutMapping("/update/{id}")
+    @CrossOrigin
+    @ResponseBody
+    public LpUser updateUser(@PathVariable Long id,@RequestBody UserDTO dto) throws Exception{
+        return lpUserService.updateUser(id,dto);
+
+    }
+
 }
