@@ -1,8 +1,7 @@
 package com.ruthless.lp.Service.Impl;
 
-import com.ruthless.lp.Exception.MyException;
 import com.ruthless.lp.Model.LpUser;
-import com.ruthless.lp.Repository.UserRepository;
+import com.ruthless.lp.Repository.LpUserRepository;
 import com.ruthless.lp.Service.LpUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,7 +10,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -26,7 +24,7 @@ public class LpUserServiceImpl implements LpUserService {
     PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
-    private UserRepository userRepository;
+    private LpUserRepository userRepository;
 
     @Override
     public void createUser(LpUser user) {
@@ -64,12 +62,12 @@ public class LpUserServiceImpl implements LpUserService {
             throw new UsernameNotFoundException("User wasn't found");
         }
         if (lpUsers.get().getUsername() == null || lpUsers.get().getPassword() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fill in all fields");
+            throw new ResponseStatusException(HttpStatus.LOCKED, "Fill in all fields");
         }
         //Returns user, if there is user under the inserted username
         LpUser user = lpUsers.get();
         if (!passwordValidationOnLogin(password, user.getPassword())){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Incorrect password");
+            throw new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT, "Incorrect password");
         }
     }
     @Override
