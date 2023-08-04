@@ -12,12 +12,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.swing.text.html.Option;
 import java.util.Optional;
 
 @RestController
@@ -84,7 +82,7 @@ public class UserController {
     @PutMapping("/update/{id}")
     @CrossOrigin
     @ResponseBody
-    public LpUser updateUser(@PathVariable Long id,@RequestBody UserDTO dto) throws Exception{
+    public LpUser updateUser(@PathVariable Long id, @RequestBody UserDTO dto) throws Exception{
         return lpUserService.updateUser(id,dto);
 
     }
