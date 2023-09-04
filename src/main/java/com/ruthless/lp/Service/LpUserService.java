@@ -3,6 +3,7 @@ package com.ruthless.lp.Service;
 import com.ruthless.lp.DTO.UserDTO;
 import com.ruthless.lp.Model.LpUser;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.Optional;
 @Service
 public interface LpUserService {
 
-    void createUser(LpUser user);
+    void createUser(UserDTO user);
 
     void login(String username, String password);
 
@@ -23,6 +24,8 @@ public interface LpUserService {
     Optional<LpUser> getUserByUserName(String username);
 
     ResponseEntity<List<LpUser>> getAllUsers();
+
+    boolean compareId (UserDTO dto);
 
 
 }

@@ -29,32 +29,13 @@ public class LpUserServiceImpl implements LpUserService {
 
 
     @Override
-    public void createUser(LpUser user) {
-        if (user.getUsername() == null || user.getPassword() == null || user.getEmail() == null){
-            throw new ResponseStatusException(HttpStatus.INSUFFICIENT_STORAGE, "Please fill in all fields");
-        }
-
-        if (!emailValidation(user.getEmail())){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email is not in the correct format");
-        }
-
-
-        if (!passwordValidationOnregister(user.getPassword())){
-            throw new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT, "Password is not in the correct format");
-        }
-
-        if (user.getUsername().length() < 5 || user.getUsername().length() > 25){
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Username must be between 5 to 25 characters");
-        }
-
-        if (userRepository.findByUsername(user.getUsername()).isPresent()){
-            throw new ResponseStatusException(HttpStatus.LOCKED, "Username already taken");
-        }
-        if (userRepository.findByEmail(user.getEmail()).isPresent()){
-            throw new ResponseStatusException(HttpStatus.EARLY_HINTS, "Email already taken");
-        }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+    public void createUser(UserDTO userDTO) {
+        verifyCredentials(userDTO);
+        LpUser dbUser = new LpUser();
+        dbUser.setUsername(userDTO.getUsername());
+        dbUser.setEmail(userDTO.getEmail());
+        dbUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        userRepository.save(dbUser);
     }
     //Login method
     @Override
@@ -77,52 +58,83 @@ public class LpUserServiceImpl implements LpUserService {
         userRepository.deleteById(id);
     }
 
-   @Override
-    public LpUser updateUser(Long id, UserDTO user) {
-    LpUser existingUser = userRepository.findById(id).get();
-    existingUser.setUsername(user.getUsername());
-    existingUser.setEmail(user.getEmail());
-    existingUser.setPassword(user.getPassword());
-
-    return userRepository.save(existingUser);
+    @Override
+    public LpUser updateUser(Long id, UserDTO userDTO) {
+        LpUser existingUser = userRepository.getById(id);
+        verifyCredentialsforUpdate(userDTO);
+        existingUser.setUsername(userDTO.getUsername());
+        existingUser.setEmail(userDTO.getEmail());
+        existingUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        return userRepository.save(existingUser);
     }
- /*
-    public void updateUser(Long id, UserDTO updatedUser) {
-        Optional<LpUser> user = userRepository.findById(id);
 
-        if (user.isPresent()) {
-            LpUser existingUser = user.get();
+    public void verifyCredentials(UserDTO user){
+        userRepository.findByUsername(user.getUsername());
+        if (user.getUsername() == null || user.getPassword() == null || user.getEmail() == null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Please fill in all fields");
+        }
 
-            if (updatedUser.getUsername() == null || updatedUser.getPassword() == null || updatedUser.getEmail() == null){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fill in all fields");
+        if (!emailValidation(user.getEmail())){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is not in the correct format");
+        }
+
+
+        if (!passwordValidationOnregister(user.getPassword())){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is not in the correct format");
+        }
+
+        if (user.getUsername().length() < 5 || user.getUsername().length() > 25){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username must be between 5 to 25 characters");
+        }
+
+        if (userRepository.findByUsername(user.getUsername()).isPresent()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username already taken");
+        }
+        if (userRepository.findByEmail(user.getEmail()).isPresent()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already taken");
+        }
+    }
+        public void verifyCredentialsforUpdate(UserDTO user){
+            if (user.getUsername() == null || user.getPassword() == null || user.getEmail() == null){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Please fill in all fields");
             }
-            if (!emailValidation(updatedUser.getEmail())){
+
+            if (!emailValidation(user.getEmail())){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is not in the correct format");
             }
 
-            if (!passwordValidationOnregister(updatedUser.getPassword())){
+
+            if (!passwordValidationOnregister(user.getPassword())){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is not in the correct format");
             }
 
-            if (updatedUser.getUsername().length() < 5 || updatedUser.getUsername().length() > 25){
+            if (user.getUsername().length() < 5 || user.getUsername().length() > 25){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username must be between 5 to 25 characters");
             }
 
-            if (userRepository.findByUsername(updatedUser.getUsername()).isPresent()){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username already taken");
+            if (userRepository.findByUsername(user.getUsername()).isPresent() && compareId(user)) {
+                throw new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT, "Username already taken");
             }
-            if (userRepository.findByEmail(updatedUser.getEmail()).isPresent()){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already taken");
+            if (userRepository.findByEmail(user.getEmail()).isPresent()&& compareId(user)){
+                throw new ResponseStatusException(HttpStatus.SEE_OTHER, "Email already taken");
             }
-
-            userRepository.save(existingUser);
-        } else {
-            throw new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT, "User not found");
         }
+
+    public boolean compareId(UserDTO dto){
+        Optional<LpUser> user = userRepository.findByUsername(dto.getUsername());
+        if (user.isPresent()) {
+            LpUser lpUser = user.get(); // Retrieve the wrapped LpUser object
+            if (lpUser.getId() != null && lpUser.getUsername() != null){
+                System.out.println("Ne");
+                return false;
+
+            }
+
+        }
+
+        System.out.println("Ano");
+            return true;
     }
-*/
-
-
     @Override
     public Optional<LpUser> getUserById(Long id) {
         Optional<LpUser> user = userRepository.findById(id);
@@ -153,3 +165,4 @@ public class LpUserServiceImpl implements LpUserService {
         return pattern.matcher(email).matches();
     }
 }
+

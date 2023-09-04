@@ -1,5 +1,10 @@
 package com.ruthless.lp.DTO;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserDTO {
 
     private String username;
